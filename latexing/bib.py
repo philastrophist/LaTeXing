@@ -9,6 +9,18 @@ FIELDS = ["address", "annote", "author", "collaborator", "booktitle", "chapter",
 CITE_FIELDS = ["author", "journal", "title", "year"]
 
 
+def normalise_journal_name(x):
+    return x.replace('and', '&')
+
+
+def abbreviate_journal(journal, settings):
+    if settings['use_journal_abbreviations']:
+        abbrevs = {normalise_journal_name(k): v for k, v in settings['journal_abbreviations'].items()}
+        x = normalise_journal_name(journal)
+        return abbrevs.get(x, x)
+    return journal
+
+
 class BibItem:
 
     def __init__(self, key, origin, entrytype, fields, tags=[], folders=[]):
@@ -27,11 +39,11 @@ class BibItem:
                     type=self.entrytype,
                     author=self.fields["author"].strip(" ,") if "author" in self.fields else "None",
                     sauthor=(re.split(r",", self.fields["author"], 1)[0] + " et al." if self.fields["author"].count("and") > 1 else self.fields["author"].strip(" ,")) if "author" in self.fields else "None",
-                    journal = self.fields["journal"] if "journal" in self.fields else "None",
+                    journal = abbreviate_journal(self.fields["journal"], settings) if "journal" in self.fields else "None",
                     title = self.fields["title"] if "title" in self.fields else "None",
                     stitle = re.split(r"[.!\?]", self.fields["title"], 1)[0] if "title" in self.fields else "None",
                     year = self.fields["year"] if "year" in self.fields else "None",
-                    origin = self.origin
+                    origin = self.origin,
                     ) for s in settings["cite_panel_format"]]
         else:
             item = "\n@%s{%s" % (self.entrytype.lower(), self.key)
