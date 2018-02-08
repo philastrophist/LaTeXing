@@ -10,7 +10,7 @@ CITE_FIELDS = ["author", "journal", "title", "year"]
 
 
 def normalise_journal_name(x):
-    return x.replace('and', '&')
+    return x.replace(' and ', ' & ')
 
 
 def abbreviate_journal(journal, settings):
